@@ -1,0 +1,227 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>我的足迹地图</title>
+    <style>
+        /* 样式保持不变 */
+        html, body, #footprint-map {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        
+        .custom-content-marker {
+            position: relative;
+            width: 25px;
+            height: 34px;
+        }
+        
+        .custom-content-marker img {
+            width: 100%;
+            height: 100%;
+        }
+        
+       /* 信息窗口容器 */
+        .info-window {
+            width: 300px !important;
+            max-width: 90vw;
+            background: rgba(255, 255, 255, 0.15); /* 毛玻璃基础透明度 */
+            backdrop-filter: blur(12px); /* 毛玻璃模糊强度 */
+            -webkit-backdrop-filter: blur(12px); /* Safari兼容 */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        /* 卡片主体样式 */
+        .card {
+            background: transparent;
+            border: none;
+        }
+        
+        /* 卡片内容区域 */
+        .card-body {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.08); /* 内容区域透明度 */
+            backdrop-filter: blur(8px); /* 内容区域模糊强度 */
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        /* 图片样式 */
+        .card-img-top {
+            height: 150px;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 标题样式 */
+        .card-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 日期样式 */
+        .card-text {
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            color: #ced4da;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 日记内容样式 */
+        .diary-content {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: black;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            padding-left: 2.5rem;
+        }
+        
+        /* 日记装饰性引号 */
+        .diary-content::before {
+            content: "“";
+            position: absolute;
+            left: 0;
+            top: -0.5rem;
+            font-size: 3rem;
+            color: #ced4da;
+            font-family: Arial, sans-serif;
+        }
+        
+        /* 悬停动画 */
+        .card {
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+<div id="footprint-map"></div>
+<link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://webapi.amap.com/maps?v=2.0&key=7ec524d4ac85ecd450bc93e58d8576bf"></script>
+<script>
+    // 初始化地图
+    var map = new AMap.Map('footprint-map', {
+        viewMode: '2D',
+        zoom: 5,
+        center: [108.93984, 34.34127],
+        mapStyle: "amap://styles/grey"
+    });
+    
+    // 添加缩放控件（修正后的正确用法）
+    AMap.plugin(['AMap.ControlBar'], function() {
+    // 创建 ControlBar 实例
+    var controlBar = new AMap.ControlBar({
+        position: { right: '20px', bottom: '20px' } // 可选：自定义位置
+    });
+    
+    // 添加到地图
+    map.addControl(controlBar);
+});
+    
+    // 足迹数据（保持不变）
+    const footprints = [
+        {
+            name: "去汉中会考",
+            date: "2019-04",
+            position: [106.931415,32.992988],
+            image: "./images/hanzhong.jpg",
+            diary: "那次去汉中会考，由于是学校安排，所以没有好好逛逛汉中，下次一定！"
+        },
+        {
+            name: "北京",
+            date: "2022-08-02",
+            position: [116.404, 39.915],
+            image: "./images/beijing.jpg",
+            diary: "第一次来到北京，参观了天安门广场和故宫，感受到了浓厚的历史文化氛围。"
+        },
+        {
+            name: "华山",
+            date: "2025-08-15",
+            position: [109.999504,34.466408],
+            image: "./images/huashan.jpg",
+            diary: "华山这一次爬山真是记忆犹新，找到了最佳观景点：快到南峰山腰间的道院门口"
+        },
+        {
+            name: "五一阿拉善骑行",
+            date: "2023-05-01",
+            position: [105.498985,38.496375],
+            image: "./images/alashan.jpg",
+            diary: "五一骑行阿拉善，这次活动真是太太有意思了！"
+        },
+        {
+            name: "乌海",
+            date: "2025-02-28",
+            position: [106.750639,39.444805],
+            image: "./images/wuhai.jpg",
+            diary: "第一天去了乌海海南区的拉僧庙，人称“小布达拉宫”。第二天去了乌海湖，还没化冰，因此没拍出好的照片来。"
+        },
+        {
+            name: "石嘴山",
+            date: "2025-2-26",
+            position: [106.837248,39.326161],
+            image: "./images/shizuishan.jpg",
+            diary: "石嘴山唯一有玩头的也就是登上这座北武当山。"
+        }
+    ];
+    
+    // 为每个足迹添加标记（保持不变）
+    footprints.forEach(footprint => {
+        const marker = new AMap.Marker({
+            position: footprint.position,
+            content: `<div class="custom-content-marker">
+                        <img src="./images/可达鸭.svg">
+                      </div>`,
+            offset: new AMap.Pixel(-20, -20)
+        });
+        
+        marker.on('click', function() {
+            const infoWindow = new AMap.InfoWindow({
+                content: createInfoWindowContent(footprint),
+                // 调整 offset 参数（示例值，可根据需要微调）
+                offset: new AMap.Pixel(0, -20), // 
+                autoMove: false // 关闭自动移动功能
+            });
+            infoWindow.open(map, footprint.position);
+        });
+        
+        map.add(marker);
+    });
+    
+    function createInfoWindowContent(footprint) {
+        return `
+            <div class="info-window p-3 rounded shadow-sm bg-white">
+                <div class="card">
+                    <img src="${footprint.image}" class="card-img-top" alt="${footprint.name}" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary mb-2">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            ${footprint.name}
+                        </h5>
+                        <p class="card-text text-muted mb-3">
+                            <i class="bi bi-calendar me-2"></i>
+                            ${footprint.date}
+                        </p>
+                        <div class="diary-content">
+                            <p class="text-start">${footprint.diary}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>
